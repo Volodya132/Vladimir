@@ -1,148 +1,97 @@
-import { useFrame } from "@react-three/fiber"
-import * as THREE from "three"
+import { Canvas, useFrame } from "@react-three/fiber"
+import { OrbitControls, Stars } from "@react-three/drei"
 import { useRef, useMemo } from "react"
+import * as THREE from "three"
 
-/* ---------- PLANET ---------- */
-
-function Planet({ size, dist, speed, color }: any) {
+function Planet({ size, distance, speed, color }: any) {
   const ref = useRef<any>()
-
   useFrame(({ clock }) => {
-    const t = clock.getElapsedTime() * speed
-    ref.current.position.set(Math.cos(t) * dist, 0, Math.sin(t) * dist)
+    ref.current.position.x = Math.sin(clock.elapsedTime * speed) * distance
+    ref.current.position.z = Math.cos(clock.elapsedTime * speed) * distance
     ref.current.rotation.y += 0.01
   })
 
   return (
     <mesh ref={ref}>
-      <sphereGeometry args={[size, 48, 48]} />
-      <meshStandardMaterial color={color} roughness={0.4} metalness={0.2} />
+      <sphereGeometry args={[size, 32, 32]} />
+      <meshStandardMaterial color={color} />
     </mesh>
   )
 }
 
-/* ---------- SATURN WITH REAL RINGS ---------- */
-
-function Saturn() {
-  const group = useRef<any>()
-
-  useFrame(({ clock }) => {
-    const t = clock.getElapsedTime() * 0.15
-    group.current.position.set(Math.cos(t) * 32, 0, Math.sin(t) * 32)
-    group.current.rotation.y += 0.002
-  })
-
+function Sun() {
   return (
-    <group ref={group}>
-      {/* planet */}
-      <mesh>
-        <sphereGeometry args={[2, 48, 48]} />
-        <meshStandardMaterial color="#ffbb55" />
-      </mesh>
-
-      {/* rings */}
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[2.8, 4.5, 128]} />
-        <meshStandardMaterial
-          color="#ccccaa"
-          side={THREE.DoubleSide}
-          transparent
-          opacity={0.8}
-        />
-      </mesh>
-    </group>
+    <mesh>
+      <sphereGeometry args={[3, 64, 64]} />
+      <meshStandardMaterial emissive="orange" emissiveIntensity={2} />
+    </mesh>
   )
 }
 
-/* ---------- ASTEROID BELT (REAL ROCKS) ---------- */
+function SaturnRings() {
+  return (
+    <mesh rotation={[Math.PI / 2, 0, 0]}>
+      <ringGeometry args={[4.2, 5.5, 64]} />
+      <meshBasicMaterial color="#c2b280" side={THREE.DoubleSide} />
+    </mesh>
+  )
+}
 
 function Asteroids() {
-  const mesh = useRef<any>()
-
-  const positions = useMemo(() => {
+  const points = useMemo(() => {
     const arr = []
-    for (let i = 0; i < 4000; i++) {
-      const r = 35 + Math.random() * 40
-      const a = Math.random() * Math.PI * 2
+    for (let i = 0; i < 2000; i++) {
       arr.push(
-        Math.cos(a) * r,
-        (Math.random() - 0.5) * 4,
-        Math.sin(a) * r
+        (Math.random() - 0.5) * 200,
+        (Math.random() - 0.5) * 20,
+        (Math.random() - 0.5) * 200
       )
     }
     return new Float32Array(arr)
   }, [])
 
-  useFrame(() => {
-    mesh.current.rotation.y += 0.0005
-  })
-
   return (
-    <points ref={mesh}>
+    <points>
       <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          array={positions}
-          count={positions.length / 3}
-          itemSize={3}
-        />
+        <bufferAttribute attach="attributes-position" array={points} itemSize={3} />
       </bufferGeometry>
-
-      <pointsMaterial size={0.25} color="white" />
+      <pointsMaterial size={0.2} color="white" />
     </points>
   )
 }
 
-/* ---------- BLACK HOLE ---------- */
-
-function BlackHole() {
-  const ref = useRef<any>()
-
-  useFrame(() => {
-    ref.current.rotation.y += 0.01
-  })
-
-  return (
-    <mesh ref={ref}>
-      <sphereGeometry args={[3.5, 64, 64]} />
-      <meshStandardMaterial
-        color="black"
-        emissive="#5500ff"
-        emissiveIntensity={3}
-      />
-    </mesh>
-  )
-}
-
-/* ---------- MAIN SCENE ---------- */
-
 export default function Scene() {
   return (
-    <>
-      {/* SUN */}
-      <mesh>
-        <sphereGeometry args={[4, 64, 64]} />
-        <meshStandardMaterial emissive="orange" emissiveIntensity={4} color="yellow" />
-      </mesh>
+    <Canvas camera={{ position: [0, 10, 25], fov: 60 }}>
+      <fog attach="fog" args={["#000", 30, 150]} />
 
-      {/* PLANETS */}
-      <Planet size={1} dist={8} speed={1} color="#4faaff" />
-      <Planet size={1.2} dist={12} speed={0.8} color="#ff4444" />
-      <Planet size={1.1} dist={16} speed={0.6} color="#33ff66" />
-      <Planet size={1.4} dist={20} speed={0.45} color="#aa66ff" />
-      <Planet size={1.6} dist={24} speed={0.35} color="#44ffee" />
+      <ambientLight intensity={0.4} />
+      <pointLight position={[0, 0, 0]} intensity={4} />
 
-      <Saturn />
+      <Stars radius={300} depth={60} count={8000} factor={7} />
 
-      <Planet size={2} dist={40} speed={0.15} color="#ff77cc" />
-      <Planet size={2.2} dist={48} speed={0.1} color="white" />
+      <OrbitControls enableZoom enableRotate maxDistance={200} minDistance={5} />
 
-      {/* BLACK HOLE FAR AWAY */}
-      <group position={[0, 0, -80]}>
-        <BlackHole />
+      <Sun />
+
+      <Planet size={0.5} distance={6} speed={1} color="gray" />
+      <Planet size={0.9} distance={9} speed={0.7} color="orange" />
+      <Planet size={1} distance={12} speed={0.5} color="blue" />
+      <Planet size={0.8} distance={15} speed={0.4} color="red" />
+      <Planet size={2} distance={20} speed={0.25} color="orange" />
+      <Planet size={1.7} distance={26} speed={0.18} color="#c2b280" />
+      <Planet size={1.4} distance={32} speed={0.13} color="lightblue" />
+      <Planet size={1.3} distance={38} speed={0.1} color="blue" />
+
+      <group position={[0,0,0]}>
+        <mesh position={[26,0,0]}>
+          <sphereGeometry args={[1.7,32,32]} />
+          <meshStandardMaterial color="#c2b280" />
+          <SaturnRings/>
+        </mesh>
       </group>
 
       <Asteroids />
-    </>
+    </Canvas>
   )
 }
