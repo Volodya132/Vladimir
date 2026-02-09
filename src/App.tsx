@@ -14,20 +14,16 @@ function Sun() {
     <group ref={ref}>
       <mesh>
         <sphereGeometry args={[3, 64, 64]} />
-        <meshStandardMaterial
-          emissive="#ff8800"
-          emissiveIntensity={4}
-          color="#ffaa33"
-        />
+        <meshStandardMaterial emissive="#ff9900" emissiveIntensity={3} />
       </mesh>
 
-      {/* GLOW */}
+      {/* glow */}
       <mesh>
-        <sphereGeometry args={[3.8, 64, 64]} />
+        <sphereGeometry args={[4.2, 64, 64]} />
         <meshBasicMaterial
-          color="#ff9900"
+          color="#ff8800"
           transparent
-          opacity={0.4}
+          opacity={0.35}
           blending={THREE.AdditiveBlending}
         />
       </mesh>
@@ -37,44 +33,44 @@ function Sun() {
 
 function Planet({ size, distance, speed }: any) {
   const ref = useRef<any>()
-  const angle = useRef(Math.random() * Math.PI * 2)
+  const a = useRef(Math.random() * Math.PI * 2)
 
   useFrame(() => {
-    angle.current += speed
-    ref.current.position.x = Math.cos(angle.current) * distance
-    ref.current.position.z = Math.sin(angle.current) * distance
-    ref.current.rotation.y += 0.01
+    a.current += speed
+    ref.current.position.set(
+      Math.cos(a.current) * distance,
+      0,
+      Math.sin(a.current) * distance
+    )
   })
 
   return (
     <mesh ref={ref}>
       <sphereGeometry args={[size, 32, 32]} />
-      <meshStandardMaterial color="#8888ff" />
+      <meshStandardMaterial color="#7aa2ff" />
     </mesh>
   )
 }
 
 function Saturn() {
   const ref = useRef<any>()
-  const angle = useRef(0)
+  const a = useRef(0)
 
   useFrame(() => {
-    angle.current += 0.003
-    ref.current.position.x = Math.cos(angle.current) * 42
-    ref.current.position.z = Math.sin(angle.current) * 42
+    a.current += 0.004
+    ref.current.position.set(Math.cos(a.current) * 40, 0, Math.sin(a.current) * 40)
   })
 
   return (
     <group ref={ref}>
       <mesh>
-        <sphereGeometry args={[1.8, 32, 32]} />
-        <meshStandardMaterial color="#d2c295" />
+        <sphereGeometry args={[2, 32, 32]} />
+        <meshStandardMaterial color="#d6c28b" />
       </mesh>
 
-      {/* rings */}
       <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[2.2, 3.2, 64]} />
-        <meshBasicMaterial color="#c2b280" side={THREE.DoubleSide} />
+        <ringGeometry args={[2.5, 3.5, 64]} />
+        <meshBasicMaterial side={THREE.DoubleSide} color="#c2b280" />
       </mesh>
     </group>
   )
@@ -82,49 +78,46 @@ function Saturn() {
 
 function Asteroids() {
   return (
-    <>
-      {Array.from({ length: 300 }).map((_, i) => (
+    <group>
+      {Array.from({ length: 400 }).map((_, i) => (
         <mesh
           key={i}
           position={[
-            (Math.random() - 0.5) * 120,
-            (Math.random() - 0.5) * 20,
-            (Math.random() - 0.5) * 120,
+            (Math.random() - 0.5) * 80,
+            (Math.random() - 0.5) * 10,
+            (Math.random() - 0.5) * 80,
           ]}
         >
-          <sphereGeometry args={[0.15, 6, 6]} />
+          <sphereGeometry args={[0.2, 6, 6]} />
           <meshStandardMaterial color="#555" />
         </mesh>
       ))}
-    </>
+    </group>
   )
 }
 
 export default function App() {
   return (
-    <Canvas camera={{ position: [0, 15, 60], fov: 60 }}>
-      <ambientLight intensity={0.4} />
-      <pointLight position={[0, 0, 0]} intensity={3} />
+    <Canvas camera={{ position: [0, 12, 45], fov: 60 }}>
+      <ambientLight intensity={0.5} />
+      <pointLight position={[0, 0, 0]} intensity={4} />
 
-      <Stars radius={300} depth={60} count={8000} factor={7} />
+      <Stars radius={200} depth={60} count={6000} factor={5} />
 
       <Sun />
 
-      {/* 7 планет */}
-      <Planet size={0.6} distance={6} speed={0.02} />
-      <Planet size={0.8} distance={9} speed={0.015} />
-      <Planet size={1} distance={13} speed={0.01} />
-      <Planet size={1.2} distance={17} speed={0.008} />
-      <Planet size={1.5} distance={22} speed={0.006} />
-      <Planet size={1.3} distance={27} speed={0.005} />
-      <Planet size={2} distance={34} speed={0.004} />
+      <Planet size={0.6} distance={7} speed={0.02} />
+      <Planet size={0.9} distance={11} speed={0.015} />
+      <Planet size={1.1} distance={15} speed={0.01} />
+      <Planet size={1.4} distance={20} speed={0.008} />
+      <Planet size={1.6} distance={25} speed={0.006} />
+      <Planet size={1.3} distance={30} speed={0.005} />
+      <Planet size={2} distance={35} speed={0.004} />
 
-      {/* САТУРН */}
       <Saturn />
-
       <Asteroids />
 
-      <OrbitControls enableZoom enablePan zoomSpeed={0.6} />
+      <OrbitControls enableZoom zoomSpeed={0.7} />
     </Canvas>
   )
 }
