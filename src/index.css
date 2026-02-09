@@ -1,4 +1,47 @@
-html, body, #root {
+function Planet({ name, size, distance, speed, textureUrl, children }: any) {
+  const ref = useRef<any>()
+  const texture = useLoader(THREE.TextureLoader, textureUrl)
+
+  useFrame(({ clock }) => {
+    const t = clock.elapsedTime * speed
+    ref.current.position.x = Math.sin(t) * distance
+    ref.current.position.z = Math.cos(t) * distance
+    ref.current.rotation.y += 0.01
+  })
+
+  return (
+    <group ref={ref}>
+      <mesh>
+        <sphereGeometry args={[size, 32, 32]} />
+        <meshStandardMaterial map={texture} />
+      </mesh>
+      
+      {/* Подпись с эффектом свечения */}
+      <Html distanceFactor={20} position={[0, size + 0.8, 0]} center>
+        <div style={{
+          color: '#fff',
+          fontSize: '14px',
+          fontWeight: 'bold',
+          textTransform: 'uppercase',
+          fontFamily: 'sans-serif',
+          pointerEvents: 'none',
+          // Вот здесь создается магия свечения:
+          textShadow: `
+            0 0 5px #fff,
+            0 0 10px #fff,
+            0 0 20px #00d2ff,
+            0 0 30px #00d2ff
+          `,
+          letterSpacing: '2px'
+        }}>
+          {name}
+        </div>
+      </Html>
+      
+      {children}
+    </group>
+  )
+}html, body, #root {
   margin: 0;
   padding: 0;
   width: 100%;
