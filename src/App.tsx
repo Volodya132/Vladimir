@@ -1,10 +1,8 @@
-import { EffectComposer, Bloom } from "@react-three/postprocessing"
 import * as THREE from "three"
 import { Canvas, useFrame } from "@react-three/fiber"
-import { OrbitControls, Stars } from "@react-three/drei"
-import { useRef } from "react"
-
+import { Stars } from "@react-three/drei"
 import { EffectComposer, Bloom } from "@react-three/postprocessing"
+import { useRef } from "react"
 
 function Sun() {
   const ref = useRef<any>()
@@ -15,7 +13,7 @@ function Sun() {
 
   return (
     <group ref={ref}>
-      {/* ядро */}
+      {/* Core */}
       <mesh>
         <sphereGeometry args={[3, 64, 64]} />
         <meshStandardMaterial
@@ -25,7 +23,7 @@ function Sun() {
         />
       </mesh>
 
-      {/* корона */}
+      {/* Corona */}
       <mesh>
         <sphereGeometry args={[4.5, 64, 64]} />
         <meshBasicMaterial
@@ -36,7 +34,7 @@ function Sun() {
         />
       </mesh>
 
-      {/* большая аура */}
+      {/* Aura */}
       <mesh>
         <sphereGeometry args={[6, 64, 64]} />
         <meshBasicMaterial
@@ -50,101 +48,40 @@ function Sun() {
   )
 }
 
-function Planet({ size, distance, speed }: any) {
+function Planet() {
   const ref = useRef<any>()
-  const a = useRef(Math.random() * Math.PI * 2)
 
   useFrame(() => {
-    a.current += speed
-    ref.current.position.set(
-      Math.cos(a.current) * distance,
-      0,
-      Math.sin(a.current) * distance
-    )
+    ref.current.rotation.y += 0.004
   })
 
   return (
-    <mesh ref={ref}>
-      <sphereGeometry args={[size, 32, 32]} />
-      <meshStandardMaterial color="#7aa2ff" />
+    <mesh ref={ref} position={[10, 0, 0]}>
+      <sphereGeometry args={[1.5, 48, 48]} />
+      <meshStandardMaterial color="#3fa9f5" />
     </mesh>
-  )
-}
-
-function Saturn() {
-  const ref = useRef<any>()
-  const a = useRef(0)
-
-  useFrame(() => {
-    a.current += 0.004
-    ref.current.position.set(Math.cos(a.current) * 40, 0, Math.sin(a.current) * 40)
-  })
-
-  return (
-    <group ref={ref}>
-      <mesh>
-        <sphereGeometry args={[2, 32, 32]} />
-        <meshStandardMaterial color="#d6c28b" />
-      </mesh>
-
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[2.5, 3.5, 64]} />
-        <meshBasicMaterial side={THREE.DoubleSide} color="#c2b280" />
-      </mesh>
-    </group>
-  )
-}
-
-function Asteroids() {
-  return (
-    <group>
-      {Array.from({ length: 400 }).map((_, i) => (
-        <mesh
-          key={i}
-          position={[
-            (Math.random() - 0.5) * 80,
-            (Math.random() - 0.5) * 10,
-            (Math.random() - 0.5) * 80,
-          ]}
-        >
-          <sphereGeometry args={[0.2, 6, 6]} />
-          <meshStandardMaterial color="#555" />
-        </mesh>
-      ))}
-    </group>
   )
 }
 
 export default function App() {
   return (
-    <Canvas camera={{ position: [0, 12, 45], fov: 60 }}>
-      <ambientLight intensity={0.5} />
-      <pointLight position={[0, 0, 0]} intensity={4} />
+    <Canvas camera={{ position: [0, 0, 15], fov: 60 }}>
+      <ambientLight intensity={0.3} />
+      <pointLight intensity={5} position={[0, 0, 0]} />
 
-      <Stars radius={200} depth={60} count={6000} factor={5} />
+      <Stars radius={100} depth={50} count={6000} factor={4} />
 
       <Sun />
+      <Planet />
 
-      <Planet size={0.6} distance={7} speed={0.02} />
-      <Planet size={0.9} distance={11} speed={0.015} />
-      <Planet size={1.1} distance={15} speed={0.01} />
-      <Planet size={1.4} distance={20} speed={0.008} />
-      <Planet size={1.6} distance={25} speed={0.006} />
-      <Planet size={1.3} distance={30} speed={0.005} />
-      <Planet size={2} distance={35} speed={0.004} />
-
-      <Saturn />
-      <Asteroids />
-
-      <OrbitControls enableZoom zoomSpeed={0.7} />
-    <EffectComposer>
-  <Bloom
-    intensity={2}
-    mipmapBlur
-    luminanceThreshold={0}
-    luminanceSmoothing={0.9}
-  />
-</EffectComposer>
-</Canvas>
+      <EffectComposer>
+        <Bloom
+          intensity={2}
+          mipmapBlur
+          luminanceThreshold={0}
+          luminanceSmoothing={0.9}
+        />
+      </EffectComposer>
+    </Canvas>
   )
 }
