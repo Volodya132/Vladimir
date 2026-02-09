@@ -1,7 +1,10 @@
+import { EffectComposer, Bloom } from "@react-three/postprocessing"
 import * as THREE from "three"
 import { Canvas, useFrame } from "@react-three/fiber"
 import { OrbitControls, Stars } from "@react-three/drei"
 import { useRef } from "react"
+
+import { EffectComposer, Bloom } from "@react-three/postprocessing"
 
 function Sun() {
   const ref = useRef<any>()
@@ -12,18 +15,34 @@ function Sun() {
 
   return (
     <group ref={ref}>
+      {/* ядро */}
       <mesh>
         <sphereGeometry args={[3, 64, 64]} />
-        <meshStandardMaterial emissive="#ff9900" emissiveIntensity={3} />
+        <meshStandardMaterial
+          emissive="#ffb000"
+          emissiveIntensity={6}
+          color="#ffcc55"
+        />
       </mesh>
 
-      {/* glow */}
+      {/* корона */}
       <mesh>
-        <sphereGeometry args={[4.2, 64, 64]} />
+        <sphereGeometry args={[4.5, 64, 64]} />
         <meshBasicMaterial
           color="#ff8800"
           transparent
-          opacity={0.35}
+          opacity={0.25}
+          blending={THREE.AdditiveBlending}
+        />
+      </mesh>
+
+      {/* большая аура */}
+      <mesh>
+        <sphereGeometry args={[6, 64, 64]} />
+        <meshBasicMaterial
+          color="#ff5500"
+          transparent
+          opacity={0.12}
           blending={THREE.AdditiveBlending}
         />
       </mesh>
@@ -118,6 +137,14 @@ export default function App() {
       <Asteroids />
 
       <OrbitControls enableZoom zoomSpeed={0.7} />
-    </Canvas>
+    <EffectComposer>
+  <Bloom
+    intensity={2}
+    mipmapBlur
+    luminanceThreshold={0}
+    luminanceSmoothing={0.9}
+  />
+</EffectComposer>
+</Canvas>
   )
 }
