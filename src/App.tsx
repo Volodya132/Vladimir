@@ -1,23 +1,28 @@
 import * as THREE from "three"
-import { Canvas, useFrame } from "@react-three/fiber"
+import { Canvas, useFrame, useThree } from "@react-three/fiber"
 import { OrbitControls, Stars } from "@react-three/drei"
 import { useRef } from "react"
+
+function CameraShake() {
+  const { camera } = useThree()
+
+  useFrame(({ clock }) => {
+    camera.position.x += Math.sin(clock.elapsedTime) * 0.002
+    camera.position.y += Math.cos(clock.elapsedTime) * 0.002
+  })
+
+  return null
+}
 
 function Sun() {
   const ref = useRef<any>()
 
-  useFrame(() => {
-    ref.current.rotation.y += 0.001
-  })
+  useFrame(() => (ref.current.rotation.y += 0.001))
 
   return (
     <mesh ref={ref}>
       <sphereGeometry args={[3, 64, 64]} />
-      <meshStandardMaterial
-        emissive="orange"
-        emissiveIntensity={2}
-        color="yellow"
-      />
+      <meshStandardMaterial emissive="orange" emissiveIntensity={3} />
     </mesh>
   )
 }
@@ -62,7 +67,7 @@ function Saturn() {
           color="#c2b280"
           side={THREE.DoubleSide}
           transparent
-          opacity={0.7}
+          opacity={0.6}
         />
       </mesh>
     </group>
@@ -70,24 +75,22 @@ function Saturn() {
 }
 
 function Asteroids() {
-  const group = useRef<any>()
+  const g = useRef<any>()
 
-  useFrame(() => {
-    group.current.rotation.y += 0.0005
-  })
+  useFrame(() => (g.current.rotation.y += 0.0004))
 
   return (
-    <group ref={group}>
-      {[...Array(200)].map((_, i) => (
+    <group ref={g}>
+      {[...Array(300)].map((_, i) => (
         <mesh
           key={i}
           position={[
-            (Math.random() - 0.5) * 60,
-            (Math.random() - 0.5) * 5,
-            (Math.random() - 0.5) * 60,
+            (Math.random() - 0.5) * 80,
+            (Math.random() - 0.5) * 10,
+            (Math.random() - 0.5) * 80,
           ]}
         >
-          <sphereGeometry args={[0.15, 8, 8]} />
+          <sphereGeometry args={[0.12, 6, 6]} />
           <meshStandardMaterial color="gray" />
         </mesh>
       ))}
@@ -97,24 +100,28 @@ function Asteroids() {
 
 export default function App() {
   return (
-    <Canvas camera={{ position: [0, 15, 35], fov: 60 }}>
-      <ambientLight intensity={0.4} />
-      <pointLight position={[0, 0, 0]} intensity={3} />
+    <Canvas camera={{ position: [0, 18, 40], fov: 60 }}>
+      <fog attach="fog" args={["#02030a", 30, 120]} />
 
-      <Stars radius={300} depth={60} count={20000} factor={7} />
+      <ambientLight intensity={0.3} />
+      <pointLight position={[0, 0, 0]} intensity={4} />
+
+      <Stars radius={400} depth={80} count={30000} factor={6} />
+
+      <CameraShake />
 
       <Sun />
 
-      <Planet size={0.5} distance={7} speed={1} color="gray" />
-      <Planet size={0.7} distance={10} speed={0.8} color="orange" />
-      <Planet size={0.8} distance={14} speed={0.6} color="blue" />
-      <Planet size={0.6} distance={18} speed={0.5} color="red" />
+      <Planet size={0.5} distance={7} speed={1} color="#aaa" />
+      <Planet size={0.7} distance={10} speed={0.8} color="#ff9933" />
+      <Planet size={0.8} distance={14} speed={0.6} color="#3399ff" />
+      <Planet size={0.6} distance={18} speed={0.5} color="#ff4444" />
 
       <Saturn />
 
       <Asteroids />
 
-      <OrbitControls enableZoom />
+      <OrbitControls />
     </Canvas>
   )
 }
