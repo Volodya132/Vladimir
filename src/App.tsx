@@ -1,105 +1,130 @@
 import * as THREE from "three"
-import { Canvas, useFrame, useThree } from "@react-three/fiber"
+import { Canvas, useFrame } from "@react-three/fiber"
 import { OrbitControls, Stars } from "@react-three/drei"
-import { useRef, useEffect } from "react"
+import { useRef } from "react"
 
-function Galaxy() {
+function Sun() {
   const ref = useRef<any>()
 
-  useFrame(() => (ref.current.rotation.y += 0.0003))
-
-  return (
-    <mesh ref={ref} rotation={[Math.PI / 2, 0, 0]}>
-      <ringGeometry args={[40, 80, 128]} />
-      <meshBasicMaterial
-        color="#4455ff"
-        transparent
-        opacity={0.15}
-        side={THREE.DoubleSide}
-      />
-    </mesh>
-  )
-}
-
-function Comets() {
-  const group = useRef<any>()
-
   useFrame(() => {
-    group.current.children.forEach((m: any) => {
-      m.position.z += 0.5
-      if (m.position.z > 40) m.position.z = -200
-    })
+    ref.current.rotation.y += 0.002
   })
 
   return (
-    <group ref={group}>
-      {[...Array(15)].map((_, i) => (
-        <mesh
-          key={i}
-          position={[
-            (Math.random() - 0.5) * 40,
-            (Math.random() - 0.5) * 20,
-            -Math.random() * 200,
-          ]}
-        >
-          <coneGeometry args={[0.2, 2, 8]} />
-          <meshStandardMaterial emissive="white" />
-        </mesh>
-      ))}
+    <group ref={ref}>
+      <mesh>
+        <sphereGeometry args={[3, 64, 64]} />
+        <meshStandardMaterial
+          emissive="#ff8800"
+          emissiveIntensity={4}
+          color="#ffaa33"
+        />
+      </mesh>
+
+      {/* GLOW */}
+      <mesh>
+        <sphereGeometry args={[3.8, 64, 64]} />
+        <meshBasicMaterial
+          color="#ff9900"
+          transparent
+          opacity={0.4}
+          blending={THREE.AdditiveBlending}
+        />
+      </mesh>
     </group>
   )
 }
 
-function AmbientSound() {
-  useEffect(() => {
-    const audio = new Audio("/space.mp3")
-    audio.loop = true
-    audio.volume = 0.4
-    audio.play()
-  }, [])
+function Planet({ size, distance, speed }: any) {
+  const ref = useRef<any>()
+  const angle = useRef(Math.random() * Math.PI * 2)
 
-  return null
-}
-
-function CameraDrift() {
-  const { camera } = useThree()
-
-  useFrame(({ clock }) => {
-    camera.position.x = Math.sin(clock.elapsedTime * 0.2) * 5
-    camera.position.z = 40 + Math.cos(clock.elapsedTime * 0.2) * 2
+  useFrame(() => {
+    angle.current += speed
+    ref.current.position.x = Math.cos(angle.current) * distance
+    ref.current.position.z = Math.sin(angle.current) * distance
+    ref.current.rotation.y += 0.01
   })
 
-  return null
+  return (
+    <mesh ref={ref}>
+      <sphereGeometry args={[size, 32, 32]} />
+      <meshStandardMaterial color="#8888ff" />
+    </mesh>
+  )
 }
 
-function Sun() {
+function Saturn() {
+  const ref = useRef<any>()
+  const angle = useRef(0)
+
+  useFrame(() => {
+    angle.current += 0.003
+    ref.current.position.x = Math.cos(angle.current) * 42
+    ref.current.position.z = Math.sin(angle.current) * 42
+  })
+
   return (
-    <mesh>
-      <sphereGeometry args={[3, 64, 64]} />
-      <meshStandardMaterial emissive="orange" emissiveIntensity={3} />
-    </mesh>
+    <group ref={ref}>
+      <mesh>
+        <sphereGeometry args={[1.8, 32, 32]} />
+        <meshStandardMaterial color="#d2c295" />
+      </mesh>
+
+      {/* rings */}
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[2.2, 3.2, 64]} />
+        <meshBasicMaterial color="#c2b280" side={THREE.DoubleSide} />
+      </mesh>
+    </group>
+  )
+}
+
+function Asteroids() {
+  return (
+    <>
+      {Array.from({ length: 300 }).map((_, i) => (
+        <mesh
+          key={i}
+          position={[
+            (Math.random() - 0.5) * 120,
+            (Math.random() - 0.5) * 20,
+            (Math.random() - 0.5) * 120,
+          ]}
+        >
+          <sphereGeometry args={[0.15, 6, 6]} />
+          <meshStandardMaterial color="#555" />
+        </mesh>
+      ))}
+    </>
   )
 }
 
 export default function App() {
   return (
-    <Canvas camera={{ position: [0, 15, 40], fov: 60 }}>
-      <fog attach="fog" args={["#02030a", 40, 160]} />
+    <Canvas camera={{ position: [0, 15, 60], fov: 60 }}>
+      <ambientLight intensity={0.4} />
+      <pointLight position={[0, 0, 0]} intensity={3} />
 
-      <ambientLight intensity={0.3} />
-      <pointLight position={[0, 0, 0]} intensity={4} />
-
-      <Stars radius={500} depth={100} count={40000} factor={6} />
-
-      <AmbientSound />
-      <CameraDrift />
+      <Stars radius={300} depth={60} count={8000} factor={7} />
 
       <Sun />
-      <Galaxy />
-      <Comets />
 
-      <OrbitControls />
+      {/* 7 планет */}
+      <Planet size={0.6} distance={6} speed={0.02} />
+      <Planet size={0.8} distance={9} speed={0.015} />
+      <Planet size={1} distance={13} speed={0.01} />
+      <Planet size={1.2} distance={17} speed={0.008} />
+      <Planet size={1.5} distance={22} speed={0.006} />
+      <Planet size={1.3} distance={27} speed={0.005} />
+      <Planet size={2} distance={34} speed={0.004} />
 
+      {/* САТУРН */}
+      <Saturn />
+
+      <Asteroids />
+
+      <OrbitControls enableZoom enablePan zoomSpeed={0.6} />
     </Canvas>
   )
 }
