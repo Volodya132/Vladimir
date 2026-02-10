@@ -19,15 +19,25 @@ function BackgroundMusic() {
     setPlaying(!playing)
   }
 
+  // Определяем отступ снизу: на телефонах (ширина < 768) делаем 100px (~2.5 см), на ПК оставляем 60px
+  const isMobile = window.innerWidth <= 768;
+
   return (
-    <div style={{ position: "absolute", bottom: 30, left: 30, zIndex: 10000 }}>
+    <div style={{ 
+      position: "absolute", 
+      bottom: isMobile ? "100px" : "60px", // Поднял кнопку выше (было 30)
+      left: "50%", // Центрируем для удобства на телефонах
+      transform: "translateX(-50%)", 
+      zIndex: 10000 
+    }}>
       <button 
         onClick={toggle} 
         style={{ 
           background: "rgba(0,210,255,0.1)", color: "#00d2ff", border: "2px solid #00d2ff", 
           padding: "15px 25px", borderRadius: "15px", cursor: "pointer", 
           backdropFilter: "blur(10px)", fontWeight: "bold", fontSize: "16px",
-          boxShadow: "0 0 20px rgba(0,210,255,0.3)"
+          boxShadow: "0 0 20px rgba(0,210,255,0.3)",
+          whiteSpace: "nowrap"
         }}>
         {playing ? "🔈 ВЫКЛЮЧИТЬ ЭМБИЕНТ" : "🔊 ВКЛЮЧИТЬ БЕСКОНЕЧНОСТЬ"}
       </button>
